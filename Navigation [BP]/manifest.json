@@ -1,0 +1,65 @@
+{
+	"format_version": 2,
+	"header": {
+		"name": "Navigation",
+		"description": "made by typidoyun",
+		"uuid": "9e3ba97b-517a-4d18-bb89-2374031fd04b",
+		"version": [
+			1,
+			0,
+			0
+		],
+		"min_engine_version": [
+			1,
+			19,
+			10
+		]
+	},
+	"modules": [
+		{
+			"type": "data",
+			"uuid": "147cb982-c546-4fcb-a9a0-e5a6e8856637",
+			"version": [
+				1,
+				0,
+				0
+			]
+		},
+		{
+			"type": "script",
+			"language": "javascript",
+			"uuid": "1276f6d3-14c3-4e50-85c4-65c2df550af7",
+			"version": [
+				1,
+				0,
+				0
+			],
+			"entry": "scripts/main.js"
+		}
+	],
+	"metadata": {
+		"generated_with": {
+			"bridge": [
+				"1.8.4"
+			]
+		}
+	},
+	"dependencies": [
+		{
+			"version": [
+				1,
+				0,
+				0
+			],
+			"uuid": "e6c9fc99-bf0f-4239-8a09-a19ffc68ecf4"
+		},
+        {
+			"module_name": "@minecraft/server",
+			"version": "1.9.0-beta"
+		},
+		{
+			"module_name": "@minecraft/server-ui",
+			"version": "1.2.0-beta"
+		}
+	]
+}

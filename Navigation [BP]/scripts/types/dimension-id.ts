@@ -1,0 +1,1 @@
+export type DimensionId = "overworld" | "nether" | "the_end";
