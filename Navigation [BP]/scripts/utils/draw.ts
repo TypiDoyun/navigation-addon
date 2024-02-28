@@ -5,6 +5,8 @@ const particleIdentifier = "minecraft:redstone_repeater_dust_particle";
 
 export const drawEdge = (player: Player, first: Vector3, second: Vector3, renderLimit: number = 20) => {
     system.run(() => {
+        if (!player || !player.isValid()) return;
+
         const diff = {
             x: first.x - second.x,
             y: first.y - second.y,
@@ -29,7 +31,6 @@ export const drawEdge = (player: Player, first: Vector3, second: Vector3, render
 }
 
 export const drawOutline = (player: Player, blockLocation: Vector3, renderLimit: number = 20) => {
-
     const drawDot = (x: number, y: number, z: number) => {
         const vector = { x, y, z };
         const distanceSquared = getDistanceSquared(player.location, vector);

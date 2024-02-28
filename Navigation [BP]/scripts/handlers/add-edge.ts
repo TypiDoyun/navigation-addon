@@ -8,6 +8,8 @@ import { drawEdge, drawOutline } from "../utils/draw";
 const firstNodes = new Map<Player, Node>();
 
 export const addEdge = (eventData: PlayerBreakBlockBeforeEvent) => {
+    
+
     const { player, block, dimension } = eventData;
 
     const inventory = player.getComponent("inventory");
@@ -43,6 +45,8 @@ export const addEdge = (eventData: PlayerBreakBlockBeforeEvent) => {
         firstNode.connections.push(node);
         node.connections.push(firstNode);
 
+        Navigator.save();
+
         drawEdge(player, firstNode.location, node.location);
         return sendMessage(player, "간선을 생성했습니다.");
     }
@@ -53,6 +57,8 @@ export const addEdge = (eventData: PlayerBreakBlockBeforeEvent) => {
 }
 
 export const cancelAdd = (eventData: PlayerPlaceBlockBeforeEvent) => {
+    
+
     const { player } = eventData;
 
     const inventory = player.getComponent("inventory");

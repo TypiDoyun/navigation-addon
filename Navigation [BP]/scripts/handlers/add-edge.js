@@ -36,6 +36,7 @@ export const addEdge = (eventData) => {
             return sendMessage(player, "이미 간선이 연결되어 있습니다.", "c");
         firstNode.connections.push(node);
         node.connections.push(firstNode);
+        Navigator.save();
         drawEdge(player, firstNode.location, node.location);
         return sendMessage(player, "간선을 생성했습니다.");
     }

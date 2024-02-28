@@ -1,12 +1,82 @@
 import { Node } from "./classes/node";
 import { Graph } from "./types/graph";
-import { NodeState } from "./types/node-state";
 import { getDimensionId } from "./get-dimension-id";
 import { Edge } from "./types/edge";
-import { DimensionLocation, world } from "@minecraft/server";
+import { Dimension, DimensionLocation, world } from "@minecraft/server";
+import { Database } from "./utils/database";
+import { makeNode } from "./utils/make-node";
+import { NodeState } from "./types/node-state";
+
+type SavedNode = {
+    location: {
+        dimension: Dimension;
+        x: number;
+        y: number;
+        z: number;
+    };
+    connections: DimensionLocation[];
+};
 
 export namespace Navigator {
     const graph: Graph = new Map();
+    const databaseId = "typi-navigator:node";
+    let initialized = false;
+
+    export const initialize = () => {
+        if (initialized) return;
+
+        initialized = true;
+
+        const nodeData = Database.read(databaseId);
+
+        const savedNodes = JSON.parse(nodeData ?? "[]") as SavedNode[];
+
+        const nodes: [Node, SavedNode][] = [];
+
+        for (const nodeState of savedNodes) {
+            const node = makeNode({
+                ...nodeState.location
+            });
+            
+            nodes.push([ node, nodeState ]);
+        }
+
+        for (const [ node, savedNode ] of nodes) {
+            for (const connection of savedNode.connections) {
+                for (const [ otherNode, _ ] of nodes) {
+                    if (connection.dimension.id !== otherNode.location.dimension.id) continue;
+                    if (connection.x !== otherNode.location.x) continue;
+                    if (connection.y !== otherNode.location.y) continue;
+                    if (connection.z !== otherNode.location.z) continue;
+
+                    node.addConnections(otherNode);
+                    break;
+                }
+            }
+
+            
+            const location = node.location;
+            const nodeKey = `${Math.floor(location.x)},${Math.floor(location.y)},${Math.floor(location.z)},${getDimensionId(location.dimension)}`;
+
+            graph.set(nodeKey, node);
+        }
+    }
+
+    export const save = () => {
+        const nodeTuples = Array.from(graph.entries());
+        const convertedData = nodeTuples.map(([ _, node ]) => {
+            return {
+                location: {
+                    ...node.location
+                },
+                connections: node.connections.map(connection => connection.location)
+            }
+        });
+
+        // world.sendMessage(JSON.stringify(convertedData, null, 4));
+
+        Database.write(databaseId, JSON.stringify(convertedData, null, 4));
+    }
 
     export const addNodes = (...nodes: Node[]) => {
         for (const node of nodes) {
@@ -16,11 +86,15 @@ export namespace Navigator {
             node.location.y += 0.5;
             node.location.z += 0.5;
 
+            const nodeKey = `${Math.floor(location.x)},${Math.floor(location.y)},${Math.floor(location.z)},${getDimensionId(location.dimension)}`;
+
             graph.set(
-                `${Math.floor(location.x)},${Math.floor(location.y)},${Math.floor(location.z)},${getDimensionId(location.dimension)}`,
+                nodeKey,
                 node
             );
         }
+
+        save();
     }
 
     export const deleteNode = (location: DimensionLocation) => {
@@ -32,7 +106,11 @@ export namespace Navigator {
             connection.connections.splice(connection.connections.indexOf(node), 1);
         }
 
-        return graph.delete(`${Math.floor(location.x)},${Math.floor(location.y)},${Math.floor(location.z)},${getDimensionId(location.dimension)}`);
+        const result =  graph.delete(`${Math.floor(location.x)},${Math.floor(location.y)},${Math.floor(location.z)},${getDimensionId(location.dimension)}`);
+
+        save();
+
+        return result;
     }
 
     export const getNode = (location: DimensionLocation) => {
@@ -55,6 +133,8 @@ export namespace Navigator {
             firstNode.addConnections(secondNode);
             secondNode.addConnections(firstNode);
         }
+
+        save();
     }
 
     export const dijkstra = (fromNode: Node) => {

@@ -23,6 +23,7 @@ export namespace Database {
             }
             
             result += part;
+            index += 1;
         }
 
         return result;

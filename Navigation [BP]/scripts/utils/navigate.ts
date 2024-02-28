@@ -9,22 +9,20 @@ const angleRange = (angle: number) => {
     return angle < 0 ? 360 + angle : (angle >= 360 ? angle - 360 : angle);
 }
 
+const isNavigating = new Map<Player, boolean>();
+
 export const navigate = async (player: Player, to: Node, reach: number = 1.5): Promise<boolean> => {
     return new Promise<boolean>((resolve, reject) => {
-        const allNodes = Navigator.getAllNodes().filter(node => node.connections.length !== 0);
         let arrowAngle = 0;
         let destinationNode: Node | undefined;
 
         const interval = system.runInterval(() => {
-            
             let minDistance = Infinity;
             
-            const fail = (reason: string) => {
+            const fail = () => {
                 resolve(false);
-                sendMessage(player, reason);
                 system.clearRun(interval);
             }
-            if (!player) fail("플레이어 사라짐");
             
             const success = () => {
                 resolve(true);
@@ -32,17 +30,19 @@ export const navigate = async (player: Player, to: Node, reach: number = 1.5): P
                 system.clearRun(interval);
             }
 
+            if (!player || !player.isValid()) return fail();
+            
             let firstNode: Node | undefined;
             let secondNode: Node | undefined;
 
             const { ways, distance } = Navigator.dijkstra(to);
 
-            if (!ways || !distance) return fail("길 없음");
+            if (!ways || !distance) return fail();
 
             Navigator.iterate((first, second) => {
                 if (!distance.has(first)) return;
                 if (!distance.has(second)) return;
-                const distanceSquare = getSegmentDistanceSquare([ first, second ].sort((a, b) => distance.get(b)! - distance.get(a)!).map(node => node.location) as any, player.location, 0.5);
+                const distanceSquare = getSegmentDistanceSquare([ first, second ].sort((a, b) => distance.get(b)! - distance.get(a)!).map(node => node.location) as any, player.location, 1);
                 
                 if (distanceSquare >= minDistance) return;
                 
@@ -51,7 +51,7 @@ export const navigate = async (player: Player, to: Node, reach: number = 1.5): P
                 secondNode = second;
             });
 
-            if (!firstNode || !secondNode) return fail("엥");
+            if (!firstNode || !secondNode) return fail();
 
             drawEdge(player, firstNode.location, secondNode.location);
 
@@ -64,10 +64,10 @@ export const navigate = async (player: Player, to: Node, reach: number = 1.5): P
             else if (firstNodeDistance > secondNodeDistance) {
                 destinationNode = secondNode;
             }
-            else return fail("길 없음!");
+            else return fail();
             
-            if (!ways || !distance) return fail("길이 없음");
-            if (!destinationNode) return fail("길 없음!");
+            if (!ways || !distance) return fail();
+            if (!destinationNode) return fail();
 
             if (destinationNode === to) {
                 const distanceSquared = getDistanceSquared(player.location, to.location);

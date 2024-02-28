@@ -3,6 +3,8 @@ import { getDistanceSquared } from "./get-distance";
 const particleIdentifier = "minecraft:redstone_repeater_dust_particle";
 export const drawEdge = (player, first, second, renderLimit = 20) => {
     system.run(() => {
+        if (!player || !player.isValid())
+            return;
         const diff = {
             x: first.x - second.x,
             y: first.y - second.y,

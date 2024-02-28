@@ -19,6 +19,7 @@ export var Database;
                 break;
             }
             result += part;
+            index += 1;
         }
         return result;
     };

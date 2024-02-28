@@ -1,15 +1,67 @@
 import { getDimensionId } from "./get-dimension-id";
+import { Database } from "./utils/database";
+import { makeNode } from "./utils/make-node";
 export var Navigator;
 (function (Navigator) {
     const graph = new Map();
+    const databaseId = "typi-navigator:node";
+    let initialized = false;
+    Navigator.initialize = () => {
+        if (initialized)
+            return;
+        initialized = true;
+        const nodeData = Database.read(databaseId);
+        const savedNodes = JSON.parse(nodeData ?? "[]");
+        const nodes = [];
+        for (const nodeState of savedNodes) {
+            const node = makeNode({
+                ...nodeState.location
+            });
+            nodes.push([node, nodeState]);
+        }
+        for (const [node, savedNode] of nodes) {
+            for (const connection of savedNode.connections) {
+                for (const [otherNode, _] of nodes) {
+                    if (connection.dimension.id !== otherNode.location.dimension.id)
+                        continue;
+                    if (connection.x !== otherNode.location.x)
+                        continue;
+                    if (connection.y !== otherNode.location.y)
+                        continue;
+                    if (connection.z !== otherNode.location.z)
+                        continue;
+                    node.addConnections(otherNode);
+                    break;
+                }
+            }
+            const location = node.location;
+            const nodeKey = `${Math.floor(location.x)},${Math.floor(location.y)},${Math.floor(location.z)},${getDimensionId(location.dimension)}`;
+            graph.set(nodeKey, node);
+        }
+    };
+    Navigator.save = () => {
+        const nodeTuples = Array.from(graph.entries());
+        const convertedData = nodeTuples.map(([_, node]) => {
+            return {
+                location: {
+                    ...node.location
+                },
+                connections: node.connections.map(connection => connection.location)
+            };
+        });
+        // world.sendMessage(JSON.stringify(convertedData, null, 4));
+        Database.write(databaseId, JSON.stringify(convertedData, null, 4));
+    };
     Navigator.addNodes = (...nodes) => {
         for (const node of nodes) {
             const { location } = node;
             node.location.x += 0.5;
             node.location.y += 0.5;
             node.location.z += 0.5;
-            graph.set(`${Math.floor(location.x)},${Math.floor(location.y)},${Math.floor(location.z)},${getDimensionId(location.dimension)}`, node);
+            const nodeKey = `${Math.floor(location.x)},${Math.floor(location.y)},${Math.floor(location.z)},${getDimensionId(location.dimension)}`;
+            graph.set(nodeKey, node);
         }
+        Navigator.save();
     };
     Navigator.deleteNode = (location) => {
         const node = Navigator.getNode(location);
@@ -18,7 +70,9 @@ export var Navigator;
         for (const connection of node.connections) {
             connection.connections.splice(connection.connections.indexOf(node), 1);
         }
-        return graph.delete(`${Math.floor(location.x)},${Math.floor(location.y)},${Math.floor(location.z)},${getDimensionId(location.dimension)}`);
+        const result = graph.delete(`${Math.floor(location.x)},${Math.floor(location.y)},${Math.floor(location.z)},${getDimensionId(location.dimension)}`);
+        Navigator.save();
+        return result;
     };
     Navigator.getNode = (location) => {
         return graph.get(`${Math.floor(location.x)},${Math.floor(location.y)},${Math.floor(location.z)},${getDimensionId(location.dimension)}`);
@@ -36,6 +90,7 @@ export var Navigator;
             firstNode.addConnections(secondNode);
             secondNode.addConnections(firstNode);
         }
+        Navigator.save();
     };
     Navigator.dijkstra = (fromNode) => {
         if (!fromNode)

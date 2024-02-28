@@ -7,6 +7,8 @@ import { drawEdge, drawOutline } from "../utils/draw";
 const firstNodes = new Map<Player, Node>();
 
 export const removeEdge = (eventData: PlayerBreakBlockBeforeEvent) => {
+    
+
     const { player, block, dimension } = eventData;
 
     const inventory = player.getComponent("inventory");
@@ -52,6 +54,8 @@ export const removeEdge = (eventData: PlayerBreakBlockBeforeEvent) => {
 }
 
 export const cancelRemove = (eventData: PlayerPlaceBlockBeforeEvent) => {
+    
+
     const { player } = eventData;
 
     const inventory = player.getComponent("inventory");
