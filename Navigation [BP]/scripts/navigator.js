@@ -49,8 +49,7 @@ export var Navigator;
                 connections: node.connections.map(connection => connection.location)
             };
         });
-        // world.sendMessage(JSON.stringify(convertedData, null, 4));
-        Database.write(databaseId, JSON.stringify(convertedData, null, 4));
+        Database.write(databaseId, JSON.stringify(convertedData));
     };
     Navigator.addNodes = (...nodes) => {
         for (const node of nodes) {

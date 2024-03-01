@@ -15,6 +15,8 @@ export const navigate = async (player: Player, to: Node, reach: number = 1.5): P
     return new Promise<boolean>((resolve, reject) => {
         let arrowAngle = 0;
         let destinationNode: Node | undefined;
+        
+        const { ways, distance } = Navigator.dijkstra(to);
 
         const interval = system.runInterval(() => {
             let minDistance = Infinity;
@@ -35,7 +37,6 @@ export const navigate = async (player: Player, to: Node, reach: number = 1.5): P
             let firstNode: Node | undefined;
             let secondNode: Node | undefined;
 
-            const { ways, distance } = Navigator.dijkstra(to);
 
             if (!ways || !distance) return fail();
 

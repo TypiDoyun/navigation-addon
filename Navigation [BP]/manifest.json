@@ -53,7 +53,7 @@
 			],
 			"uuid": "e6c9fc99-bf0f-4239-8a09-a19ffc68ecf4"
 		},
-        {
+		{
 			"module_name": "@minecraft/server",
 			"version": "1.9.0-beta"
 		},

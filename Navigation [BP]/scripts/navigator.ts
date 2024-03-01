@@ -1,11 +1,10 @@
 import { Node } from "./classes/node";
 import { Graph } from "./types/graph";
-import { getDimensionId } from "./get-dimension-id";
+import { getDimensionId } from "./utils/get-dimension-id";
 import { Edge } from "./types/edge";
-import { Dimension, DimensionLocation, world } from "@minecraft/server";
+import { Dimension, DimensionLocation } from "@minecraft/server";
 import { Database } from "./utils/database";
 import { makeNode } from "./utils/make-node";
-import { NodeState } from "./types/node-state";
 
 type SavedNode = {
     location: {
@@ -53,7 +52,6 @@ export namespace Navigator {
                     break;
                 }
             }
-
             
             const location = node.location;
             const nodeKey = `${Math.floor(location.x)},${Math.floor(location.y)},${Math.floor(location.z)},${getDimensionId(location.dimension)}`;
@@ -73,9 +71,7 @@ export namespace Navigator {
             }
         });
 
-        // world.sendMessage(JSON.stringify(convertedData, null, 4));
-
-        Database.write(databaseId, JSON.stringify(convertedData, null, 4));
+        Database.write(databaseId, JSON.stringify(convertedData));
     }
 
     export const addNodes = (...nodes: Node[]) => {
@@ -106,7 +102,7 @@ export namespace Navigator {
             connection.connections.splice(connection.connections.indexOf(node), 1);
         }
 
-        const result =  graph.delete(`${Math.floor(location.x)},${Math.floor(location.y)},${Math.floor(location.z)},${getDimensionId(location.dimension)}`);
+        const result = graph.delete(`${Math.floor(location.x)},${Math.floor(location.y)},${Math.floor(location.z)},${getDimensionId(location.dimension)}`);
 
         save();
 

@@ -5,8 +5,23 @@ export namespace Database {
     const MAX_LENGTH = 32_767;
 
     export const write = (id: string, value: string) => {
+        let index = 0;
+        
+        while (true) {
+            const propertyId = `${identifier}:${id}-${index}`;
+            if (index < value.length / MAX_LENGTH) {
+                world.setDynamicProperty(propertyId, value.slice(MAX_LENGTH * index, MAX_LENGTH * (index + 1)));
+            }
+            else {
+                const cache = world.getDynamicProperty(propertyId);
+
+                if (cache === undefined) break;
+
+                world.setDynamicProperty(propertyId);
+            }
+            index += 1;
+        }
         for (let index = 0; index < value.length / MAX_LENGTH; index++) {
-            world.setDynamicProperty(`${identifier}:${id}-${index}`, value.slice(MAX_LENGTH * index, MAX_LENGTH * (index + 1)));
         }
     }
     
